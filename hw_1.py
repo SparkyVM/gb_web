@@ -6,7 +6,7 @@ app = Flask(__name__)
 # Например, создать страницы «Одежда», «Обувь» и «Куртка», используя базовый шаблон.
 @app.route('/')
 def main():
-    return 'Hello'
+    return 'Добро пожаловать в магазин отдежды'
 
 @app.route('/clothes/')
 def clothes():
@@ -16,9 +16,21 @@ def clothes():
 def shoes():
     return render_template('shoes.html')
 
-@app.route('/jacket/')
-def jacket():
-    return render_template('jacket.html')
+@app.route('/shirts/')
+def shirts():
+    return render_template('shirts.html')
+
+@app.route('/pants/')
+def pants():
+    return render_template('pants.html')
+
+@app.route('/sneakers/')
+def sneakers():
+    return render_template('sneakers.html')
+
+@app.route('/timber/')
+def timber():
+    return render_template('timber.html')
 
 if __name__ =='__main__':
     app.run(debug=True)
