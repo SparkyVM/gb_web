@@ -1,8 +1,8 @@
-import threading
-import multiprocessing
-import asyncio
 import requests
 import time
+import threading
+import multiprocessing
+import asyncio, aiohttp, aiofiles
 
 """
 Написать программу, которая скачивает изображения с заданных URL-адресов и сохраняет их на диск. Каждое изображение должно сохраняться в отдельном файле, 
@@ -33,32 +33,30 @@ def loader_thread(file):
         print('Ошибка при загрузке')
 
 def loader_process(file):
-    start_thread_time = time.time()
+    start_process_time = time.time()
     response = requests.get(file)
     if response.status_code == 200:
         filename = file.split('/')[-1]
         with open(PATH + filename, "wb") as f:
             f.write(response.content)
-        print(f"Downloaded {filename}    in {time.time() - start_thread_time:.2f} seconds")
+        print(f"Downloaded {filename}    in {time.time() - start_process_time:.2f} seconds")
     else:
         print('Ошибка при загрузке')
 
 async def loader_async(file):
-    start_thread_time = time.time()
-    response = requests.get(file)
-    if response.status_code == 200:
-        filename = file.split('/')[-1]
-        with open(PATH + filename, "wb") as f:
-            f.write(response.content)
-        print(f"Downloaded {filename}    in {time.time() - start_thread_time:.2f} seconds")
-    else:
-        print('Ошибка при загрузке')
+    start_async_time = time.time()
+    async with aiohttp.ClientSession() as session:
+        async with session.get(file) as response:
+            if response.status == 200:
+                filename = file.split('/')[-1]
+                async with aiofiles.open(PATH + filename, 'wb') as f:   
+                    await f.write(await response.read())
+                print(f"Downloaded {filename}    in {time.time() - start_async_time:.2f} seconds")
+
 
 async def main_async():
     tasks = [asyncio.create_task(loader_async(file)) for file in urls]
     await asyncio.gather(*tasks)
-
-#print(f'Общее время выполнения программы - {time.time() - start_time:.2f}')
 
 if __name__ =='__main__':
 
