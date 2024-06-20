@@ -1,7 +1,8 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, flash
 from flask_wtf import CSRFProtect
 from models import db, User
 from forms import RegistrationForm
+from werkzeug.security import generate_password_hash, check_password_hash
 
 """
 Создать форму для регистрации пользователей на сайте. 
@@ -31,13 +32,17 @@ def main():
 def reg():
     form = RegistrationForm()
     if request.method == 'POST' and form.validate:
-        first_name = form.first_name.data
-        last_name = form.last_name.data
-        email = form.email.data
-        password = form.password.data
-
-        return f'Залогинился {last_name}'
-    return render_template('reg.html')
+        f_first_name = form.first_name.data
+        f_last_name = form.last_name.data
+        f_email = form.email.data
+        f_password = generate_password_hash(form.password.data)
+        #f_password = form.password.data
+        new_user = User(first_name = f_first_name, last_name = f_last_name, email = f_email, password = f_password)
+        db.session.add(new_user)
+        db.session.commit()
+        flash("Вы успешно зарегистрированы", "success")
+        print(f'Зарегистрировался {f_last_name}')
+    return render_template('reg.html', form=form)
 
 
 if __name__ =='__main__':
