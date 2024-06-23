@@ -26,14 +26,14 @@ async def add_items(count: int):
 @router.get("/items/{item_id}", response_model=Item)     # возвращает товар с указанным идентификатором.
 async def show_item(item_id : int):
     query = items.select().where(items.c.id == item_id)
-    if await database.execute(query) == -1:
+    if not (await database.fetch_one(query)):
         raise HTTPException(status_code=404, detail="Item not found")
     return await database.fetch_one(query)
 
 @router.put("/items/{item_id}")         # обновляет товар с указанным идентификатором.
 async def edit_item(item_id : int, new_item : ItemIn):
     query = items.select().where(items.c.id == item_id)
-    if await database.execute(query) == -1:
+    if not (await database.fetch_one(query)):
         raise HTTPException(status_code=404, detail="Item not found")
     query = items.update().where(items.c.id == item_id).values(
                                   name = new_item.name,
@@ -45,7 +45,7 @@ async def edit_item(item_id : int, new_item : ItemIn):
 @router.delete("/items/{item_id}")      # удаляет товар с указанным идентификатором.
 async def delete_user(item_id : int):
     query = items.select().where(items.c.id == item_id)
-    if await database.execute(query) == -1:
+    if not (await database.fetch_one(query)):
         raise HTTPException(status_code=404, detail="Item not found")
     query = items.delete().where(items.c.id == item_id)
     await database.execute(query)

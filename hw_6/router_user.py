@@ -26,14 +26,14 @@ async def add_users(count: int):
 @router.get("/users/{user_id}", response_model=User)     # возвращает пользователя с указанным идентификатором.
 async def show_user(user_id : int):
     query = users.select().where(users.c.id == user_id)
-    if await database.execute(query) == -1:
+    if not (await database.fetch_one(query)):
         raise HTTPException(status_code=404, detail="User not found")
     return await database.fetch_one(query)
 
 @router.put("/users/{user_id}")         # обновляет пользователя с указанным идентификатором.
 async def edit_user(user_id : int, new_user : UserIn):
     query = users.select().where(users.c.id == user_id)
-    if await database.execute(query) == -1:
+    if not (await database.fetch_one(query)):
         raise HTTPException(status_code=404, detail="User not found")
     query = users.update().where(users.c.id == user_id).values(
                                   name = new_user.name,
@@ -46,7 +46,7 @@ async def edit_user(user_id : int, new_user : UserIn):
 @router.delete("/users/{user_id}")      # удаляет пользователя с указанным идентификатором.
 async def delete_user(user_id : int):
     query = users.select().where(users.c.id == user_id)
-    if await database.execute(query) == -1:
+    if not (await database.fetch_one(query)):
         raise HTTPException(status_code=404, detail="User not found")
     query = users.delete().where(users.c.id == user_id)
     await database.execute(query)
