@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, flash
 from flask_wtf import CSRFProtect
-from models import db, User
+from hw_2_models import db, User
 from forms import RegistrationForm
 from werkzeug.security import generate_password_hash, check_password_hash
 
