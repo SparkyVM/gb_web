@@ -1,7 +1,8 @@
 from fastapi import APIRouter, HTTPException
-from sqlalchemy import select, orm, text
+from datetime import datetime 
 from models import Order, OrderIn
 from db import database, users, items, orders
+from random import choice
 
 router = APIRouter()
 
@@ -24,23 +25,21 @@ async def add_order(new_order : OrderIn):
 
 @router.post("/orders/{count}")        # добавляет несколько заказов.
 async def add_orders(count: int):
-    #list_user_id = await database.fetch_all(select(users.c.id))
-    #list_user_id = orm.Session.execute(select(users))
-    sql = text('SELECT id from users') 
-    list_user_id = engine.engine.e #.execute(sql) 
-    #return await database.execute(sql) 
-    for record in list_user_id: 
-        print("\n", record) 
-    print('____',str(list_user_id))
-    '''
+    users_data = await database.fetch_all(users.select())
+    items_data = await database.fetch_all(items.select())
+    list_user_id =[]            # список ID пользователей
+    list_item_id =[]            # список ID товаров
+    for record in users_data: 
+        list_user_id.append(record['id']) 
+    for record in items_data: 
+        list_item_id.append(record['id'])
     for i in range(1, count+1):
         query = orders.insert().values(status = 'new',
-                                  id_user = 1,
-                                  id_item = 1 )
+                                  id_user = choice(list_user_id),
+                                  id_item = choice(list_item_id),
+                                  created_at = datetime.now())
         await database.execute(query)
-    '''
-    
-    return {'message': f'{count} new orders create'}
+    return {'message': f'{count} new orders create'}    
 
 @router.get("/orders/{order_id}", response_model=Order)     # возвращает заказ с указанным идентификатором.
 async def show_order(order_id : int):
@@ -49,7 +48,7 @@ async def show_order(order_id : int):
         raise HTTPException(status_code=404, detail="Order not found")
     return await database.fetch_one(query)
 
-@router.put("/orders/{order_id}")         # обновляет заказ с указанным идентификатором.
+@router.put("/orders/{order_id}")           # обновляет заказ с указанным идентификатором.
 async def edit_order(order_id : int, new_order : OrderIn):
     query = orders.select().where(orders.c.id == order_id)
     if not (await database.fetch_one(query)):
